@@ -1,0 +1,61 @@
+# 工作流的名称
+name: Build Flutter APK
+
+# 触发工作流的事件
+on:
+  # 当推送到 main 分支时触发
+  push:
+    branches: [ main ]
+  # 当有针对 main 分支的 Pull Request 时触发
+  pull_request:
+    branches: [ main ]
+
+# 定义一个或多个任务（job）
+jobs:
+  build:
+    # 指定任务运行的虚拟环境
+    runs-on: ubuntu-latest
+
+    # 任务的步骤
+    steps:
+      # 第一步：检出（下载）你的代码到虚拟环境中
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # 第二步：设置 Java 环境，因为 Android 构建需要它
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      # 第三步：设置 Flutter 环境
+      # 使用一个社区维护的、非常流行的 action 来安装 Flutter
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable' # 使用稳定版的 Flutter
+          cache: true        # 启用缓存以加快后续构建速度
+
+      # 第四步：安装项目的依赖项
+      - name: Install dependencies
+        run: flutter pub get
+
+      # （可选，但推荐）第五步：检查代码格式和静态分析
+      - name: Analyze project
+        run: flutter analyze
+
+      # （可选，但推荐）第六步：运行测试
+      - name: Run tests
+        run: flutter test
+
+      # 第七步：构建 APK Release 版本
+      - name: Build APK
+        run: flutter build apk --release
+
+      # 第八步：上传构建好的 APK 文件作为产物（Artifact）
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-apk # 产物的名称
+          path: build/app/outputs/flutter-apk/app-release.apk # APK 文件的路径
