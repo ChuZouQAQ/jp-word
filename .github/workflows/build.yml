@@ -30,23 +30,25 @@ jobs:
           java-version: '17'
 
       # 步骤 3: 设置 Flutter SDK 环境
-      # 使用一个社区维护的、非常流行的 Action 来安装 Flutter
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
         with:
           channel: 'stable' # 使用稳定版的 Flutter
           cache: true       # 启用缓存，加快后续的构建速度
 
-      # 步骤 4: 安装项目的所有依赖项 (根据 pubspec.yaml 文件)
+      # 步骤 4: (调试步骤) 列出当前目录下的所有文件，帮助我们确认项目结构
+      - name: List files in the repository
+        run: ls -la
+
+      # 步骤 5: 安装项目的所有依赖项
       - name: Install dependencies
         run: flutter pub get
 
-      # 步骤 5: 执行 Flutter 构建命令来生成 release 版本的 APK
+      # 步骤 6: 执行 Flutter 构建命令来生成 release 版本的 APK
       - name: Build APK
         run: flutter build apk --release
 
-      # 步骤 6: 上传构建好的 APK 文件作为产物 (Artifact)
-      # 这样你就可以在工作流运行结束后下载它
+      # 步骤 7: 上传构建好的 APK 文件作为产物 (Artifact)
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
         with:
@@ -54,3 +56,4 @@ jobs:
           name: release-apk
           # 指定要上传的 APK 文件路径
           path: build/app/outputs/flutter-apk/app-release.apk
+
