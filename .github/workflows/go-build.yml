@@ -1,0 +1,48 @@
+# 工作流的名称
+name: Go 项目构建流程
+
+# 触发此工作流的事件
+on:
+  push:
+    branches: [ "main", "master" ]
+  pull_request:
+    branches: [ "main", "master" ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    # 指定任务运行的虚拟机环境
+    runs-on: ubuntu-latest
+
+    # 任务的执行步骤
+    steps:
+      # 第 1 步：检出你的代码
+      - name: 检出代码
+        uses: actions/checkout@v4
+
+      # 第 2 步：设置 Go 语言环境
+      # 使用官方的 setup-go action 来安装 Go
+      - name: 设置 Go 环境
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.21.x' # 可以指定项目需要的 Go 版本
+
+      # 第 3 步：安装项目依赖
+      # 运行 go get 命令来下载 go.mod 文件中定义的依赖项
+      - name: 安装依赖
+        run: go get -d ./...
+
+      # 第 4 步：执行构建
+      # 运行 go build 命令来编译项目
+      # -v 参数会打印出正在编译的包的名称
+      # -o 参数指定输出的可执行文件的名称，我们将其命名为 "jp-word"
+      - name: 构建项目
+        run: go build -v -o jp-word .
+
+      # 第 5 步：上传构建产物
+      # 将编译生成的可执行文件 "jp-word" 上传
+      - name: 上传可执行文件
+        uses: actions/upload-artifact@v4
+        with:
+          name: jp-word-executable
+          path: jp-word
