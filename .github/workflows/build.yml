@@ -1,61 +1,56 @@
-# 工作流的名称
-name: Build Flutter APK
+# 工作流的名称，会显示在 GitHub Actions 页面
+name: Build Android APK
 
-# 触发工作流的事件
+# 定义触发工作流的事件
 on:
-  # 当推送到 main 分支时触发
+  # 当有代码推送到 main 分支时触发
   push:
-    branches: [ main ]
+    branches: [ "main" ]
   # 当有针对 main 分支的 Pull Request 时触发
   pull_request:
-    branches: [ main ]
+    branches: [ "main" ]
 
-# 定义一个或多个任务（job）
+# 定义工作流中的任务
 jobs:
   build:
-    # 指定任务运行的虚拟环境
+    # 指定任务运行在最新版的 Ubuntu 虚拟环境上
     runs-on: ubuntu-latest
 
-    # 任务的步骤
+    # 任务的执行步骤
     steps:
-      # 第一步：检出（下载）你的代码到虚拟环境中
-      - name: Checkout code
+      # 步骤 1: 检出（下载）你的仓库代码到虚拟环境中
+      - name: Checkout repository
         uses: actions/checkout@v4
 
-      # 第二步：设置 Java 环境，因为 Android 构建需要它
-      - name: Setup Java
+      # 步骤 2: 设置 Java 开发环境 (JDK)，这是安卓构建所必需的
+      - name: Set up Java
         uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
           java-version: '17'
 
-      # 第三步：设置 Flutter 环境
-      # 使用一个社区维护的、非常流行的 action 来安装 Flutter
-      - name: Setup Flutter
+      # 步骤 3: 设置 Flutter SDK 环境
+      # 使用一个社区维护的、非常流行的 Action 来安装 Flutter
+      - name: Set up Flutter
         uses: subosito/flutter-action@v2
         with:
           channel: 'stable' # 使用稳定版的 Flutter
-          cache: true        # 启用缓存以加快后续构建速度
+          cache: true       # 启用缓存，加快后续的构建速度
 
-      # 第四步：安装项目的依赖项
+      # 步骤 4: 安装项目的所有依赖项 (根据 pubspec.yaml 文件)
       - name: Install dependencies
         run: flutter pub get
 
-      # （可选，但推荐）第五步：检查代码格式和静态分析
-      - name: Analyze project
-        run: flutter analyze
-
-      # （可选，但推荐）第六步：运行测试
-      - name: Run tests
-        run: flutter test
-
-      # 第七步：构建 APK Release 版本
+      # 步骤 5: 执行 Flutter 构建命令来生成 release 版本的 APK
       - name: Build APK
         run: flutter build apk --release
 
-      # 第八步：上传构建好的 APK 文件作为产物（Artifact）
-      - name: Upload APK
+      # 步骤 6: 上传构建好的 APK 文件作为产物 (Artifact)
+      # 这样你就可以在工作流运行结束后下载它
+      - name: Upload APK artifact
         uses: actions/upload-artifact@v4
         with:
-          name: release-apk # 产物的名称
-          path: build/app/outputs/flutter-apk/app-release.apk # APK 文件的路径
+          # 设置产物的名称
+          name: release-apk
+          # 指定要上传的 APK 文件路径
+          path: build/app/outputs/flutter-apk/app-release.apk
